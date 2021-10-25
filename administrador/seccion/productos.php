@@ -13,8 +13,10 @@
         case "agregar":
             $sentencia = $conexion->prepare("INSERT INTO libros (nombre, imagen) VALUES (:nombre, :imagen)");
             $sentencia->bindParam(':nombre',$txtNombre);
+
             $fecha = new DateTime();
             $nombreArchivo = ($txtImagen != "")?$fecha->getTimestamp()."_".$_FILES["txt_imagen"]["name"]:"imagen.jpg";
+
             $tmpImagen = $_FILES["txt_imagen"]["tmp_name"];
 
             if($tmpImagen!=""){
@@ -22,6 +24,7 @@
             }
             $sentencia->bindParam(':imagen',$nombreArchivo);
             $sentencia->execute();
+            header("Location:productos.php");
             break;
         case "modificar":
             // echo "Presionado botón modificar";
@@ -31,14 +34,33 @@
             $sentencia->execute();
 
             if($txtImagen != ""){
+            $fecha = new DateTime();
+            $nombreArchivo = ($txtImagen != "")?$fecha->getTimestamp()."_".$_FILES["txt_imagen"]["name"]:"imagen.jpg";
+            $tmpImagen = $_FILES["txt_imagen"]["tmp_name"];
+
+            move_uploaded_file($tmpImagen,"../../img/".$nombreArchivo);
+
+            $sentencia = $conexion->prepare('SELECT imagen FROM libros WHERE id=:id');
+            $sentencia->bindParam(':id',$txtID);
+            $sentencia->execute();
+            $libro = $sentencia->fetch(PDO::FETCH_LAZY);
+
+            if(isset($libro["imagen"]) && ($libro["imagen"]!="imagen.jpg")){
+                if(file_exists("../../img/".$libro["imagen"])){
+                    unlink("../../img/".$libro["imagen"]);
+                }
+            }
+
             $sentencia = $conexion->prepare('UPDATE libros SET imagen=:imagen WHERE id=:id');
-            $sentencia->bindParam(':imagen',$txtImagen);
+            $sentencia->bindParam(':imagen',$nombreArchivo);
             $sentencia->bindParam(':id',$txtID);
             $sentencia->execute();
             }
+            header("Location:productos.php");
             break;
         case "cancelar":
-            echo "Presionado botón cancelar";
+            // echo "Presionado botón cancelar";
+            header("Location:productos.php");
             break;
         case "Seleccionar":
             // echo "Presionado botón seleccionar";
@@ -66,6 +88,7 @@
             $sentencia = $conexion->prepare('DELETE FROM libros WHERE id=:id');
             $sentencia->bindParam(':id',$txtID);
             $sentencia->execute();
+            header("Location:productos.php");
             break;
     }
 
@@ -87,7 +110,7 @@
             <form method="POST" enctype="multipart/form-data">
                 <div class = "form-group">
                 <label for="txt_id">ID:</label>
-                <input type="text" class="form-control" value="<?php echo $txtID; ?>" id="txt_id" name="txt_id" placeholder="ID">
+                <input type="text" class="form-control" value="<?php echo $txtID; ?>" id="txt_id" name="txt_id" placeholder="ID" required readonly>
                 </div>
 
                 <div class = "form-group mt-2">
@@ -97,14 +120,17 @@
 
                 <div class = "form-group mt-2">
                 <label for="txt_imagen">Imagen:</label>
-                <?php echo $txtImagen; ?>
+                <br>
+                <?php if($txtImagen != ""){?>
+                    <img class="img-thumbnail rounded" src="../../img/<?php echo $txtImagen; ?>" alt="" width="80">
+                <?php } ?>
                 <input type="file" class="form-control"  id="txt_imagen" name="txt_imagen">
                 </div>
 
                 <div class="btn-group mt-2" role="group" aria-label="">
-                    <button type="submit" name="accion" value="agregar" class="btn btn-success mx-2">Agregar</button>
-                    <button type="submit" name="accion" value="modificar" class="btn btn-warning mx-2">Modificar</button>
-                    <button type="submit" name="accion" value="cancelar" class="btn btn-info mx-2">Cancelar</button>
+                    <button type="submit" name="accion" <?php echo ($accion == "Seleccionar")? "disabled" : ""; ?> value="agregar" class="btn btn-success mx-2">Agregar</button>
+                    <button type="submit" name="accion" <?php echo ($accion != "Seleccionar")? "disabled" : ""; ?> value="modificar" class="btn btn-warning mx-2">Modificar</button>
+                    <button type="submit" name="accion" <?php echo ($accion != "Seleccionar")? "disabled" : ""; ?> value="cancelar" class="btn btn-info mx-2">Cancelar</button>
                 </div>
             </form>
             </div>
@@ -127,8 +153,9 @@
                 <tr>
                     <td><?php echo $libro['id']; ?></td>
                     <td><?php echo $libro['nombre']; ?></td>
-                    <td><?php echo $libro['imagen']; ?></td>
-
+                    <td>
+                    <img class="img-thumbnail rounded" src="../../img/<?php echo $libro['imagen']; ?>" alt="" width="80">
+                    </td>
                     <td>
                         <form method="POST">
                             <input hidden type="text" name="txt_id" id="txt_id" value="<?php echo $libro['id'];?>">
