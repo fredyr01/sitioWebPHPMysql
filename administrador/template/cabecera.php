@@ -30,6 +30,7 @@
                 <a class="nav-item nav-link active" href="#">Administrador sitio web</a>
                 <a class="nav-item nav-link" href="<?php echo $url; ?>/administrador/inicio.php">Inicio</a>
                 <a class="nav-item nav-link" href="<?php echo $url; ?>/administrador/seccion/productos.php">Libros</a>
+                <a class="nav-item nav-link" href="<?php echo $url; ?>/administrador/seccion/usuarios.php">Usuarios</a>
                 <a class="nav-item nav-link" href="<?php echo $url; ?>/administrador/seccion/cerrar.php">Cerrar sesión</a>
                 <a class="nav-item nav-link" href="<?php echo $url; ?>">Ver sitio web</a>
             </div>

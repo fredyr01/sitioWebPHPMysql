@@ -14,7 +14,7 @@
             <h4 class="card-title"><?php echo $libro['nombre']; ?></h4>
             <a name="" id="" class="btn btn-primary" href="https://goalkicker.com" role="button">Ver más</a>
         </div>
-    </div>
+    </div><br>
     </div>
 <?php } ?>
 
